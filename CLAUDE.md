@@ -5,7 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm start            # Start Expo dev server (scan QR with Expo Go)
+# Node.js v24 must be on PATH before running npm commands:
+export PATH="/c/Users/sravy/AppData/Local/nvm/v24.14.0:$PATH"
+
+npm start -- --lan   # Start dev server in LAN mode (phone on same WiFi)
 npm run android      # Start with Android emulator
 npm run ios          # Start with iOS simulator (macOS only)
 npm run web          # Start web version
@@ -15,18 +18,50 @@ No lint or test scripts are configured yet.
 
 ## Environment Setup
 
-Copy `.env.example` to `.env` and fill in Supabase credentials before running:
+`.env` already exists in the project root with real Supabase credentials. Do not overwrite it.
 
-```
-EXPO_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+Run `supabase/schema.sql` in the Supabase SQL Editor to create all tables, RLS policies, and seed exercises (already done).
+
+## Current Status (March 2026)
+
+**Phase 1 is fully built.** All screens, components, hooks, and Supabase integration are in place.
+
+**SDK:** Expo SDK 54 (downgraded from 55 — App Store Expo Go supports SDK 54; SDK 55 was just released and not yet in App Store).
+
+**Dev environment known quirks:**
+- Node.js PATH must be set manually each session: `export PATH="/c/Users/sravy/AppData/Local/nvm/v24.14.0:$PATH"` (also in `~/.bashrc`)
+- `metro-config` has a patch applied to `node_modules/metro-config/src/loadConfig.js` to fix a Windows + Node v22+ ESM URL bug (`import(path)` → `import(pathToFileURL(path).href)`). This patch is lost on `npm install` — re-apply if Metro fails to load the config.
+- Use `--legacy-peer-deps` on all `npm install` commands.
+- To generate a QR code for Expo Go: `node -e "const qrcode = require('qrcode-terminal'); qrcode.generate('exp://192.168.0.27:8081', {small: true}, (q) => console.log(q));"`
+- Phone IP for LAN: `192.168.0.27:8081`
+
+## Git Workflow
+
+**Commit and push regularly** — after every meaningful change (new feature, bug fix, config update). Keep commits small and focused.
+
+```bash
+export PATH="$PATH:/c/Program Files/GitHub CLI"
+
+# Stage specific files (never git add -A or git add . blindly — .env must stay untracked)
+git add <files>
+
+# Commit with a clear message describing WHAT changed and WHY
+git commit -m "fix: correct exercise picker modal close behavior"
+git commit -m "feat: add set volume calculation to workout detail"
+git commit -m "chore: upgrade to Expo SDK 54"
+
+# Push
+git push
 ```
 
-Run `supabase/schema.sql` in the Supabase SQL Editor to create all tables, RLS policies, and seed exercises.
+**Commit message format:** `<type>: <short description>`
+Types: `feat`, `fix`, `chore`, `refactor`, `style`, `docs`
+
+**Never commit:** `.env`, `node_modules/`, any file with credentials.
 
 ## Architecture
 
-**Stack:** React Native + Expo SDK 55, Expo Router v4 (file-based navigation), Supabase (PostgreSQL + Auth), NativeWind v4 + Tailwind v4, Zustand.
+**Stack:** React Native + Expo SDK 54, Expo Router v6 (file-based navigation), Supabase (PostgreSQL + Auth), NativeWind v4 + Tailwind v3, Zustand.
 
 **Entry point:** `expo-router/entry` → `app/_layout.tsx` (root layout with auth guard).
 
@@ -64,3 +99,16 @@ All styling uses React Native `StyleSheet` with the design token file `constants
 ### Exercise data
 
 The `exercises` table is seeded with ~36 system exercises (no `created_by`). Users can add custom exercises by inserting rows with their own `created_by` UUID. The `external_api_id` column is reserved for a future workout API integration.
+
+## Next Steps (Phase 1 completion)
+
+- [ ] Verify app loads and auth flow works end-to-end in Expo Go
+- [ ] Test: sign up → log a workout → view in history → sign out → sign back in
+- [ ] Fix any runtime errors surfaced during real device testing
+
+## Phase 2 (future)
+
+- Body metrics UI (table already in DB: `body_metrics`)
+- Nutrition tracking UI (table already in DB: `nutrition_logs`)
+- Workout recommendations via public exercise API (ExerciseDB or wger) — `exercises.external_api_id` already reserved
+- Progress charts
