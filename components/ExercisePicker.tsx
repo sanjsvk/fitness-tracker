@@ -32,6 +32,7 @@ export function ExercisePicker({ visible, onSelect, onClose }: ExercisePickerPro
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [recentlyAdded, setRecentlyAdded] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (visible) {
@@ -42,6 +43,11 @@ export function ExercisePicker({ visible, onSelect, onClose }: ExercisePickerPro
         .then(({ data }) => {
           if (data) setExercises(data);
         });
+    } else {
+      // Reset when closed
+      setQuery('');
+      setSelectedCategory(null);
+      setRecentlyAdded(new Set());
     }
   }, [visible]);
 
@@ -58,13 +64,48 @@ export function ExercisePicker({ visible, onSelect, onClose }: ExercisePickerPro
     });
   }, [exercises, query, selectedCategory]);
 
+  const handleSelect = (exercise: Exercise) => {
+    onSelect(exercise);
+    // Stay open, stay in the same category — just show feedback
+    setRecentlyAdded((prev) => {
+      const next = new Set(prev);
+      next.add(exercise.id);
+      return next;
+    });
+    // Clear the added indicator after 1.5s
+    setTimeout(() => {
+      setRecentlyAdded((prev) => {
+        const next = new Set(prev);
+        next.delete(exercise.id);
+        return next;
+      });
+    }, 1500);
+  };
+
+  const handleDoneOrBack = () => {
+    if (selectedCategory !== null) {
+      // Go back to All exercises view
+      setSelectedCategory(null);
+      setQuery('');
+    } else {
+      // At top level — close the picker
+      onClose();
+    }
+  };
+
+  const headerLabel = selectedCategory
+    ? `← ${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}`
+    : 'Add Exercise';
+
+  const actionLabel = selectedCategory ? 'All' : 'Done';
+
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleDoneOrBack}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Add Exercise</Text>
-          <TouchableOpacity onPress={onClose} hitSlop={8}>
-            <Text style={styles.close}>Done</Text>
+          <Text style={styles.title}>{headerLabel}</Text>
+          <TouchableOpacity onPress={handleDoneOrBack} hitSlop={8}>
+            <Text style={styles.close}>{actionLabel}</Text>
           </TouchableOpacity>
         </View>
 
@@ -80,7 +121,7 @@ export function ExercisePicker({ visible, onSelect, onClose }: ExercisePickerPro
         <View style={styles.chips}>
           <TouchableOpacity
             style={[styles.chip, !selectedCategory && styles.chipActive]}
-            onPress={() => setSelectedCategory(null)}
+            onPress={() => { setSelectedCategory(null); setQuery(''); }}
           >
             <Text style={[styles.chipText, !selectedCategory && styles.chipTextActive]}>All</Text>
           </TouchableOpacity>
@@ -88,7 +129,7 @@ export function ExercisePicker({ visible, onSelect, onClose }: ExercisePickerPro
             <TouchableOpacity
               key={cat}
               style={[styles.chip, selectedCategory === cat && styles.chipActive]}
-              onPress={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
+              onPress={() => { setSelectedCategory(selectedCategory === cat ? null : cat); setQuery(''); }}
             >
               <Text style={[styles.chipText, selectedCategory === cat && styles.chipTextActive]}>
                 {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -100,34 +141,34 @@ export function ExercisePicker({ visible, onSelect, onClose }: ExercisePickerPro
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.item}
-              onPress={() => {
-                onSelect(item);
-                onClose();
-                setQuery('');
-                setSelectedCategory(null);
-              }}
-              activeOpacity={0.7}
-            >
-              <View style={styles.itemLeft}>
-                <View
-                  style={[
-                    styles.dot,
-                    { backgroundColor: CATEGORY_COLORS[item.category ?? ''] ?? colors.primary },
-                  ]}
-                />
-                <View>
-                  <Text style={styles.itemName}>{item.name}</Text>
-                  {item.equipment && (
-                    <Text style={styles.itemSub}>{item.equipment}</Text>
-                  )}
+          renderItem={({ item }) => {
+            const added = recentlyAdded.has(item.id);
+            return (
+              <TouchableOpacity
+                style={styles.item}
+                onPress={() => handleSelect(item)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.itemLeft}>
+                  <View
+                    style={[
+                      styles.dot,
+                      { backgroundColor: CATEGORY_COLORS[item.category ?? ''] ?? colors.primary },
+                    ]}
+                  />
+                  <View>
+                    <Text style={styles.itemName}>{item.name}</Text>
+                    {item.equipment && (
+                      <Text style={styles.itemSub}>{item.equipment}</Text>
+                    )}
+                  </View>
                 </View>
-              </View>
-              <Text style={styles.add}>+</Text>
-            </TouchableOpacity>
-          )}
+                <Text style={[styles.add, added && styles.addedIcon]}>
+                  {added ? '✓' : '+'}
+                </Text>
+              </TouchableOpacity>
+            );
+          }}
           contentContainerStyle={{ paddingBottom: 40 }}
           ItemSeparatorComponent={() => <View style={styles.sep} />}
         />
@@ -189,5 +230,6 @@ const styles = StyleSheet.create({
   itemName: { fontSize: 15, color: colors.text, fontWeight: '500' },
   itemSub: { fontSize: 12, color: colors.textTertiary, marginTop: 1 },
   add: { fontSize: 22, color: colors.primary, fontWeight: '300' },
+  addedIcon: { fontSize: 18, color: colors.success, fontWeight: '700' },
   sep: { height: 1, backgroundColor: colors.surface, marginHorizontal: spacing.md },
 });
