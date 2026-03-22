@@ -39,8 +39,9 @@ Run `supabase/schema.sql` in the Supabase SQL Editor to create all tables, RLS p
 - Home tab: recent workouts + weekly count, refreshes on focus
 - lbs/kg toggle per workout (defaults to lbs)
 - Nutrition tab: hamburger (≡) switcher between Workout / Nutrition sections
-  - Today screen: log food (name, serving, calories, protein), daily totals, delete entries
+  - Today screen: log food (name, serving, calories, protein), daily totals, edit + delete entries, save entry to saved meals, pick from saved meals to pre-fill form
   - History screen: calendar view, tap a day to see entries + daily totals
+  - Saved Meals screen: bookmark frequently used meals; fuzzy duplicate detection (Jaccard word similarity + macro tolerance) prevents duplicates; tap to expand macros, inline edit, delete
 
 **SDK:** Expo SDK 54 (downgraded from 55 — App Store Expo Go supports SDK 54; SDK 55 was just released and not yet in App Store).
 
@@ -87,7 +88,7 @@ Types: `feat`, `fix`, `chore`, `refactor`, `style`, `docs`
 app/_layout.tsx          ← checks session, redirects to (auth) or (tabs)
 app/(auth)/              ← login + signup screens
 app/(tabs)/              ← bottom tab bar: Home / History / Profile
-app/(nutrition)/         ← bottom tab bar: Today / History (nutrition)
+app/(nutrition)/         ← bottom tab bar: Today / History / Saved (nutrition)
 app/workout/new.tsx      ← modal: log a new workout
 app/workout/[id].tsx     ← view completed workout detail
 ```
@@ -99,7 +100,8 @@ Section switching between Workout and Nutrition is handled by `components/Sectio
 - `lib/supabase.ts` — single Supabase client, uses `expo-secure-store` for session persistence
 - `hooks/useAuth.ts` — subscribes to `supabase.auth.onAuthStateChange`, exposes `session` + `signOut`
 - `hooks/useWorkouts.ts` — fetches workouts with nested `workout_exercises → exercise + sets`, exposes `saveWorkout` which writes the full workout in sequence (workout → workout_exercises → sets)
-- `hooks/useNutrition.ts` — fetches/adds/deletes nutrition_logs entries for the current user
+- `hooks/useNutrition.ts` — fetches/adds/edits/deletes `nutrition_logs` entries for the current user
+- `hooks/useSavedMeals.ts` — CRUD for `saved_meals`; `addMeal` includes fuzzy duplicate check (Jaccard + macro tolerance) and returns `{ ok, duplicate }`
 - `store/workoutStore.ts` — Zustand store holding the **in-progress** workout being built before saving; reset after save
 
 ### Database schema (key relationships)
@@ -108,9 +110,11 @@ Section switching between Workout and Nutrition is handled by `components/Sectio
 profiles (1) → workouts (many)
 workouts (1) → workout_exercises (many) → exercises (ref table)
 workout_exercises (1) → sets (many)
+profiles (1) → nutrition_logs (many)
+profiles (1) → saved_meals (many)
 ```
 
-Phase 2 table (`body_metrics`) is already created in the DB but has no UI yet. `nutrition_logs` is fully implemented.
+Phase 2 table (`body_metrics`) is already created in the DB but has no UI yet.
 
 ### Styling
 
@@ -119,12 +123,6 @@ All styling uses React Native `StyleSheet` with the design token file `constants
 ### Exercise data
 
 The `exercises` table is seeded with ~36 system exercises (no `created_by`). Users can add custom exercises by inserting rows with their own `created_by` UUID. The `external_api_id` column is reserved for a future workout API integration.
-
-## Next Steps (Phase 1 completion)
-
-- [ ] Verify app loads and auth flow works end-to-end in Expo Go
-- [ ] Test: sign up → log a workout → view in history → sign out → sign back in
-- [ ] Fix any runtime errors surfaced during real device testing
 
 ## Phase 2 (future)
 
