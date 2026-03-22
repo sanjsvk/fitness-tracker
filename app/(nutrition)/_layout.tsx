@@ -36,6 +36,13 @@ export default function NutritionLayout() {
           tabBarIcon: ({ focused }) => <TabIcon icon="📋" focused={focused} />,
         }}
       />
+      <Tabs.Screen
+        name="saved"
+        options={{
+          title: 'Saved',
+          tabBarIcon: ({ focused }) => <TabIcon icon="⭐" focused={focused} />,
+        }}
+      />
     </Tabs>
   );
 }

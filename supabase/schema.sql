@@ -47,7 +47,8 @@ CREATE TABLE IF NOT EXISTS sets (
   set_number          INT NOT NULL,
   weight              DECIMAL(6,2),
   reps                INT,
-  weight_unit         TEXT DEFAULT 'kg',
+  duration            DECIMAL(6,2),              -- minutes, for cardio exercises
+  weight_unit         TEXT DEFAULT 'lbs',
   created_at          TIMESTAMPTZ DEFAULT now()
 );
 
@@ -126,6 +127,20 @@ CREATE POLICY "body_metrics_own" ON body_metrics
 -- Nutrition logs: own data only
 CREATE POLICY "nutrition_logs_own" ON nutrition_logs
   FOR ALL USING (auth.uid() = user_id);
+
+-- Saved meals
+CREATE TABLE IF NOT EXISTS saved_meals (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  name         TEXT NOT NULL,
+  serving_size TEXT,
+  calories     DECIMAL(7,2),
+  protein      DECIMAL(6,2),
+  created_at   TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE saved_meals ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "saved_meals_own" ON saved_meals
+  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- Auto-create profile on signup
 CREATE OR REPLACE FUNCTION handle_new_user()

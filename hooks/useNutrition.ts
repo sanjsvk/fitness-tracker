@@ -54,6 +54,25 @@ export function useNutrition(userId: string | undefined) {
     }
   };
 
+  const editLog = async (
+    id: string,
+    entry: { food_name: string; serving_size: string | null; calories: number | null; protein: number | null }
+  ): Promise<boolean> => {
+    try {
+      const { error } = await supabase.from('nutrition_logs').update({
+        food_name: entry.food_name,
+        serving_size: entry.serving_size || null,
+        calories: entry.calories,
+        protein: entry.protein,
+      }).eq('id', id);
+      if (error) return false;
+      setLogs((prev) => prev.map((l) => l.id === id ? { ...l, ...entry } : l));
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const deleteLog = async (id: string): Promise<boolean> => {
     try {
       const { error } = await supabase.from('nutrition_logs').delete().eq('id', id);
@@ -65,5 +84,5 @@ export function useNutrition(userId: string | undefined) {
     }
   };
 
-  return { logs, loading, addLog, deleteLog, refetch: fetchLogs };
+  return { logs, loading, addLog, editLog, deleteLog, refetch: fetchLogs };
 }
