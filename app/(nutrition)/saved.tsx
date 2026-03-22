@@ -148,9 +148,24 @@ export default function SavedMealsScreen() {
 
         {isExpanded && (
           <View style={styles.macroRow}>
-            <MacroPill label="Serving" value={item.serving_size ?? '—'} />
-            <MacroPill label="Calories" value={item.calories != null ? `${Math.round(item.calories)} kcal` : '—'} />
-            <MacroPill label="Protein" value={item.protein != null ? `${Math.round(item.protein)}g` : '—'} />
+            <View style={styles.macroItem}>
+              <Text style={styles.macroLabel}>Quantity</Text>
+              <Text style={styles.macroValue}>{item.serving_size ?? '—'}</Text>
+            </View>
+            <View style={styles.macroDivider} />
+            <View style={styles.macroItem}>
+              <Text style={styles.macroLabel}>Calories</Text>
+              <Text style={styles.macroValue}>
+                {item.calories != null ? `${Math.round(item.calories)} kcal` : '—'}
+              </Text>
+            </View>
+            <View style={styles.macroDivider} />
+            <View style={styles.macroItem}>
+              <Text style={styles.macroLabel}>Protein</Text>
+              <Text style={styles.macroValue}>
+                {item.protein != null ? `${Math.round(item.protein)}g` : '—'}
+              </Text>
+            </View>
           </View>
         )}
 
@@ -178,10 +193,10 @@ export default function SavedMealsScreen() {
         <ActivityIndicator color={colors.primary} style={styles.loader} />
       ) : meals.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyIcon}>⭐</Text>
+          <Text style={styles.emptyIcon}>🔖</Text>
           <Text style={styles.emptyTitle}>No saved meals</Text>
           <Text style={styles.emptySub}>
-            Log a meal in Today's tab and tap "⭐ Save" to save it here for quick reuse.
+            Log a meal in Today's tab and tap "Save" on any entry to save it here for quick reuse.
           </Text>
         </View>
       ) : (
@@ -195,15 +210,6 @@ export default function SavedMealsScreen() {
         />
       )}
     </SafeAreaView>
-  );
-}
-
-function MacroPill({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.pill}>
-      <Text style={styles.pillLabel}>{label}</Text>
-      <Text style={styles.pillValue}>{value}</Text>
-    </View>
   );
 }
 
@@ -245,22 +251,19 @@ const styles = StyleSheet.create({
 
   macroRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
-  },
-  pill: {
+    alignItems: 'center',
     backgroundColor: colors.surface2,
-    borderRadius: radius.sm,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.border,
-    paddingHorizontal: spacing.sm + 2,
-    paddingVertical: spacing.xs + 1,
-    alignItems: 'center',
+    paddingVertical: spacing.sm + 2,
   },
-  pillLabel: { fontSize: 10, color: colors.textTertiary, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.4 },
-  pillValue: { fontSize: 13, fontWeight: '700', color: colors.text },
+  macroItem: { flex: 1, alignItems: 'center', gap: 2 },
+  macroDivider: { width: 1, height: 32, backgroundColor: colors.border },
+  macroLabel: { fontSize: 11, fontWeight: '600', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.4 },
+  macroValue: { fontSize: 15, fontWeight: '700', color: colors.text },
 
   cardActions: {
     flexDirection: 'row',

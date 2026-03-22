@@ -40,7 +40,7 @@ export default function NutritionLayout() {
         name="saved"
         options={{
           title: 'Saved',
-          tabBarIcon: ({ focused }) => <TabIcon icon="⭐" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon icon="🔖" focused={focused} />,
         }}
       />
     </Tabs>

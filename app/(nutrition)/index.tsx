@@ -193,7 +193,7 @@ export default function NutritionTodayScreen() {
                       style={styles.fromSavedBtn}
                       onPress={() => { setShowForm(false); setPickerVisible(true); }}
                     >
-                      <Text style={styles.fromSavedText}>⭐ Saved</Text>
+                      <Text style={styles.fromSavedText}>Saved meals</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -321,7 +321,7 @@ export default function NutritionTodayScreen() {
                       </View>
                       <View style={styles.entryActions}>
                         <TouchableOpacity onPress={() => handleSaveToSaved(log)} style={styles.actionBtn} hitSlop={6}>
-                          <Text style={styles.actionSave}>⭐ Save</Text>
+                          <Text style={styles.actionSave}>Save</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => startEdit(log)} style={styles.actionBtn} hitSlop={6}>
                           <Text style={styles.actionEdit}>Edit</Text>
@@ -338,27 +338,12 @@ export default function NutritionTodayScreen() {
           </ScrollView>
         )}
 
-        {/* Bottom buttons */}
+        {/* Bottom button */}
         {!showForm && editingId === null && (
-          <View style={styles.bottomBar}>
-            {savedMeals.length > 0 && (
-              <TouchableOpacity
-                style={styles.savedBtn}
-                onPress={() => setPickerVisible(true)}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.savedBtnText}>⭐ Saved</Text>
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity
-              style={[styles.addBtn, savedMeals.length === 0 && styles.addBtnFull]}
-              onPress={openAddForm}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.addBtnIcon}>+</Text>
-              <Text style={styles.addBtnText}>Add Food</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity style={styles.addBtn} onPress={openAddForm} activeOpacity={0.85}>
+            <Text style={styles.addBtnIcon}>+</Text>
+            <Text style={styles.addBtnText}>Add Food</Text>
+          </TouchableOpacity>
         )}
       </KeyboardAvoidingView>
 
@@ -509,28 +494,11 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 17, fontWeight: '600', color: colors.text },
   emptySub: { fontSize: 13, color: colors.textSecondary, textAlign: 'center', maxWidth: 260 },
 
-  // Bottom bar
-  bottomBar: {
+  addBtn: {
     position: 'absolute',
     bottom: 90,
     left: spacing.md,
     right: spacing.md,
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  savedBtn: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    backgroundColor: `${colors.warning}20`,
-    borderRadius: radius.lg,
-    borderWidth: 1.5,
-    borderColor: `${colors.warning}50`,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  savedBtnText: { fontSize: 14, fontWeight: '700', color: colors.warning },
-  addBtn: {
-    flex: 1,
     backgroundColor: colors.primary,
     borderRadius: radius.lg,
     paddingVertical: spacing.md,
@@ -539,7 +507,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
   },
-  addBtnFull: { flex: 1 },
   addBtnIcon: { fontSize: 22, color: '#fff', fontWeight: '300', lineHeight: 24 },
   addBtnText: { fontSize: 16, fontWeight: '700', color: '#fff' },
 });
