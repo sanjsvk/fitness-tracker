@@ -60,10 +60,10 @@ export default function NewWorkoutScreen() {
   };
 
   const handleDiscard = () => {
-    if (exercises.length === 0) { reset(); router.back(); return; }
+    if (exercises.length === 0) { reset(); router.replace('/(tabs)/history'); return; }
     Alert.alert('Discard workout?', 'All progress will be lost.', [
       { text: 'Keep editing', style: 'cancel' },
-      { text: 'Discard', style: 'destructive', onPress: () => { reset(); router.back(); } },
+      { text: 'Discard', style: 'destructive', onPress: () => { reset(); router.replace('/(tabs)/history'); } },
     ]);
   };
 
