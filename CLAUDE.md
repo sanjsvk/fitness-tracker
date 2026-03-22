@@ -24,7 +24,20 @@ Run `supabase/schema.sql` in the Supabase SQL Editor to create all tables, RLS p
 
 ## Current Status (March 2026)
 
-**Phase 1 is fully built.** All screens, components, hooks, and Supabase integration are in place.
+**Phase 1 is fully built** with the following features complete:
+- Auth (sign up / sign in / sign out)
+- Log workouts: exercises, sets, weight/reps for strength; time + cardio-specific metrics for cardio
+- Cardio metric types per exercise (`cardio_metric` column on `exercises` table):
+  - `speed_distance` → time + speed (km/h) + distance (km) — Running
+  - `level_distance` → time + level + distance (km) — Cycling, Stair Master, Cross Trainer
+  - `incline_speed` → time + incline (%) + speed (km/h) — Incline Walk
+  - `reps` → time + reps — Jump Rope
+  - `null` → strength: weight + reps
+- Edit workout (update set values, add new exercises)
+- Delete workout
+- History tab: calendar view with workout dots; tap any day to see workouts
+- Home tab: recent workouts + weekly count, refreshes on focus
+- lbs/kg toggle per workout (defaults to lbs)
 
 **SDK:** Expo SDK 54 (downgraded from 55 — App Store Expo Go supports SDK 54; SDK 55 was just released and not yet in App Store).
 

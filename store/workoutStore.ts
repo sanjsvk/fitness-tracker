@@ -4,7 +4,9 @@ import { DraftExercise, DraftSet, Exercise } from '@/types';
 interface WorkoutStore {
   name: string;
   exercises: DraftExercise[];
+  weightUnit: 'kg' | 'lbs';
   setName: (name: string) => void;
+  setWeightUnit: (unit: 'kg' | 'lbs') => void;
   addExercise: (exercise: Exercise) => void;
   removeExercise: (index: number) => void;
   addSet: (exerciseIndex: number) => void;
@@ -13,20 +15,22 @@ interface WorkoutStore {
   reset: () => void;
 }
 
-const defaultSet = (): DraftSet => ({ weight: '', reps: '' });
+const defaultSet = (): DraftSet => ({
+  weight: '', reps: '', duration: '',
+  speed: '', distance: '', level: '', incline: '',
+});
 
 export const useWorkoutStore = create<WorkoutStore>((set) => ({
   name: '',
   exercises: [],
+  weightUnit: 'lbs',
 
   setName: (name) => set({ name }),
+  setWeightUnit: (weightUnit) => set({ weightUnit }),
 
   addExercise: (exercise) =>
     set((state) => ({
-      exercises: [
-        ...state.exercises,
-        { exercise, sets: [defaultSet()] },
-      ],
+      exercises: [...state.exercises, { exercise, sets: [defaultSet()] }],
     })),
 
   removeExercise: (index) =>
@@ -47,8 +51,10 @@ export const useWorkoutStore = create<WorkoutStore>((set) => ({
   removeSet: (exerciseIndex, setIndex) =>
     set((state) => {
       const exercises = [...state.exercises];
-      const sets = exercises[exerciseIndex].sets.filter((_, i) => i !== setIndex);
-      exercises[exerciseIndex] = { ...exercises[exerciseIndex], sets };
+      exercises[exerciseIndex] = {
+        ...exercises[exerciseIndex],
+        sets: exercises[exerciseIndex].sets.filter((_, i) => i !== setIndex),
+      };
       return { exercises };
     }),
 
@@ -61,5 +67,5 @@ export const useWorkoutStore = create<WorkoutStore>((set) => ({
       return { exercises };
     }),
 
-  reset: () => set({ name: '', exercises: [] }),
+  reset: () => set({ name: '', exercises: [], weightUnit: 'lbs' }),
 }));
