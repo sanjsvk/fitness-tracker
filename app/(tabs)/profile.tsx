@@ -12,6 +12,7 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useWorkouts } from '@/hooks/useWorkouts';
+import { SectionSwitcher } from '@/components/SectionSwitcher';
 import { colors, radius, spacing } from '@/constants/theme';
 
 export default function ProfileScreen() {
@@ -55,7 +56,10 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Profile</Text>
+        <View style={styles.titleRow}>
+          <SectionSwitcher currentSection="workout" />
+          <Text style={styles.title}>Profile</Text>
+        </View>
 
         <View style={styles.avatarWrap}>
           <View style={styles.avatar}>
@@ -121,6 +125,7 @@ function Row({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.md, gap: spacing.lg, paddingBottom: spacing.xxl },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   title: { fontSize: 26, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
 
   avatarWrap: { alignItems: 'center', gap: 6, paddingVertical: spacing.md },

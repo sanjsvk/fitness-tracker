@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -6,16 +6,19 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
 import { useWorkouts } from '@/hooks/useWorkouts';
 import { WorkoutCard } from '@/components/WorkoutCard';
+import { SectionSwitcher } from '@/components/SectionSwitcher';
 import { colors, spacing } from '@/constants/theme';
 
 export default function HomeScreen() {
   const { session } = useAuth();
-  const { workouts, loading } = useWorkouts(session?.user?.id);
+  const { workouts, loading, refetch } = useWorkouts(session?.user?.id);
+
+  useFocusEffect(useCallback(() => { refetch(); }, [refetch]));
 
   const greeting = () => {
     const hour = new Date().getHours();
@@ -35,7 +38,8 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <View>
+          <SectionSwitcher currentSection="workout" />
+          <View style={styles.headerText}>
             <Text style={styles.greeting}>{greeting()}</Text>
             <Text style={styles.name}>
               {session?.user?.email?.split('@')[0] ?? 'Athlete'}
@@ -102,7 +106,8 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: { padding: spacing.md, paddingBottom: spacing.xxl, gap: spacing.lg },
 
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  header: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
+  headerText: { flex: 1 },
   greeting: { fontSize: 13, color: colors.textSecondary, fontWeight: '500' },
   name: { fontSize: 26, fontWeight: '800', color: colors.text, letterSpacing: -0.5, marginTop: 2 },
 

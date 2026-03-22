@@ -24,7 +24,7 @@ Run `supabase/schema.sql` in the Supabase SQL Editor to create all tables, RLS p
 
 ## Current Status (March 2026)
 
-**Phase 1 is fully built** with the following features complete:
+**Phase 1 + Nutrition tab are fully built** with the following features complete:
 - Auth (sign up / sign in / sign out)
 - Log workouts: exercises, sets, weight/reps for strength; time + cardio-specific metrics for cardio
 - Cardio metric types per exercise (`cardio_metric` column on `exercises` table):
@@ -38,6 +38,9 @@ Run `supabase/schema.sql` in the Supabase SQL Editor to create all tables, RLS p
 - History tab: calendar view with workout dots; tap any day to see workouts
 - Home tab: recent workouts + weekly count, refreshes on focus
 - lbs/kg toggle per workout (defaults to lbs)
+- Nutrition tab: hamburger (≡) switcher between Workout / Nutrition sections
+  - Today screen: log food (name, serving, calories, protein), daily totals, delete entries
+  - History screen: calendar view, tap a day to see entries + daily totals
 
 **SDK:** Expo SDK 54 (downgraded from 55 — App Store Expo Go supports SDK 54; SDK 55 was just released and not yet in App Store).
 
@@ -84,15 +87,19 @@ Types: `feat`, `fix`, `chore`, `refactor`, `style`, `docs`
 app/_layout.tsx          ← checks session, redirects to (auth) or (tabs)
 app/(auth)/              ← login + signup screens
 app/(tabs)/              ← bottom tab bar: Home / History / Profile
+app/(nutrition)/         ← bottom tab bar: Today / History (nutrition)
 app/workout/new.tsx      ← modal: log a new workout
 app/workout/[id].tsx     ← view completed workout detail
 ```
+
+Section switching between Workout and Nutrition is handled by `components/SectionSwitcher.tsx` (hamburger ≡ button) placed in each tab header. It navigates via `router.replace('/(nutrition)')` or `router.replace('/(tabs)')`.
 
 ### Data flow
 
 - `lib/supabase.ts` — single Supabase client, uses `expo-secure-store` for session persistence
 - `hooks/useAuth.ts` — subscribes to `supabase.auth.onAuthStateChange`, exposes `session` + `signOut`
 - `hooks/useWorkouts.ts` — fetches workouts with nested `workout_exercises → exercise + sets`, exposes `saveWorkout` which writes the full workout in sequence (workout → workout_exercises → sets)
+- `hooks/useNutrition.ts` — fetches/adds/deletes nutrition_logs entries for the current user
 - `store/workoutStore.ts` — Zustand store holding the **in-progress** workout being built before saving; reset after save
 
 ### Database schema (key relationships)
@@ -103,7 +110,7 @@ workouts (1) → workout_exercises (many) → exercises (ref table)
 workout_exercises (1) → sets (many)
 ```
 
-Phase 2 tables (`body_metrics`, `nutrition_logs`) are already created in the DB but have no UI yet.
+Phase 2 table (`body_metrics`) is already created in the DB but has no UI yet. `nutrition_logs` is fully implemented.
 
 ### Styling
 
@@ -122,6 +129,5 @@ The `exercises` table is seeded with ~36 system exercises (no `created_by`). Use
 ## Phase 2 (future)
 
 - Body metrics UI (table already in DB: `body_metrics`)
-- Nutrition tracking UI (table already in DB: `nutrition_logs`)
 - Workout recommendations via public exercise API (ExerciseDB or wger) — `exercises.external_api_id` already reserved
 - Progress charts
